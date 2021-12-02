@@ -69,7 +69,7 @@ module HackerOne
 
       def reporters
         raise ArgumentError, "Program cannot be nil" unless program
-        response = self.class.hackerone_api_connection.get do |req|
+        response = hackerone_api_connection.get do |req|
           req.url "programs/#{Program.find(program).id}/reporters"
         end
 
@@ -95,7 +95,7 @@ module HackerOne
         raise ArgumentError, "Program cannot be nil" unless program
         raise ArgumentError, "State is invalid" unless REPORT_STATES.include?(state.to_s)
 
-        response = self.class.hackerone_api_connection.get do |req|
+        response = hackerone_api_connection.get do |req|
           options = {
             "filter[state][]" => state,
             "filter[program][]" => program
@@ -159,7 +159,7 @@ module HackerOne
       private
       def post(endpoint, body)
         response = with_retry do
-          self.class.hackerone_api_connection.post do |req|
+          hackerone_api_connection.post do |req|
             req.headers["Content-Type"] = "application/json"
             req.body = body.to_json
             req.url endpoint
@@ -171,7 +171,7 @@ module HackerOne
 
       def get(endpoint, params = nil)
         response = with_retry do
-          self.class.hackerone_api_connection.get do |req|
+          hackerone_api_connection.get do |req|
             req.headers["Content-Type"] = "application/json"
             req.params = params || {}
             req.url endpoint
@@ -198,15 +198,8 @@ module HackerOne
         end
       end
 
-      def self.hackerone_api_connection
-        unless ENV["HACKERONE_TOKEN_NAME"] && ENV["HACKERONE_TOKEN"]
-          raise NotConfiguredError, "HACKERONE_TOKEN_NAME HACKERONE_TOKEN environment variables must be set"
-        end
-
-        @connection ||= Faraday.new(url: "https://api.hackerone.com/v1") do |faraday|
-          faraday.basic_auth(ENV["HACKERONE_TOKEN_NAME"], ENV["HACKERONE_TOKEN"])
-          faraday.adapter Faraday.default_adapter
-        end
+      def self.hackerone_api_connection(**args)
+        Base.new(args).hackerone_api_connection
       end
 
       def with_retry(attempts = 3, &block)
