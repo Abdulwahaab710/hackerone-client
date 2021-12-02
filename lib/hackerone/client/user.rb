@@ -7,8 +7,8 @@ module HackerOne
 
       delegate :username, :signal, :impact, :reputation, to: :attributes
 
-      def self.find(username_we_want)
-        user_json = make_get_request("users/#{username_we_want}")
+      def self.find(username_we_want, **args)
+        user_json = make_get_request("users/#{username_we_want}", args)
         new(user_json)
       end
 
