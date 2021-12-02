@@ -3,6 +3,7 @@
 require "faraday"
 require "json"
 require "active_support/time"
+require_relative "client/base"
 require_relative "client/version"
 require_relative "client/report"
 require_relative "client/activity"
@@ -55,9 +56,11 @@ module HackerOne
       end
     end
 
-    class Api
-      def initialize(program = nil)
+    class Api < Base
+      def initialize(program = nil, **args)
         @program = program
+
+        super(args)
       end
 
       def program
